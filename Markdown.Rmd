@@ -1,0 +1,207 @@
+---
+title: 'Data Science in R Final Project: Non-Residential Fire Causes'
+author: "Lubov McKone"
+date: "May 7, 2017"
+output: html_document
+---
+
+```{r, include=FALSE}
+#REQUIRED LIBRARIES
+require(magrittr)
+require(foreign)
+require(dplyr)
+require(dplyr)
+require(data.table)
+require(ggplot2)
+require(dplyr)
+require(sqldf)
+require(ggplot2)
+require(maptools)
+require(rgeos)
+require(ggmap)
+require(scales)
+require(RColorBrewer)
+require(plotly)
+```
+
+#Introduction
+
+The grad student we are working with, Diane, has noted that there are many fires in the NFIRS databases with "undetermined" cause, particularly after 2011.
+
+My analysis aims to investigate how the number of non-residential fires with "undetermined" causes has changed over time and by state, and determine which years and states have statistically "out of the ordinary" number of fires with undetermined causes. 
+
+#Data Cleaning and Subsetting
+
+I used the fireincident data tables for every year from Diane's Google Drive. If you download these files into the working directory and name them "[year]incidents" this code will run. Unfortunately I was unable to upload them myself beacuse of their size and my time constraint.
+
+I subsetted the fireincident data tables to include only non-residential fires, and only retained the state and "cause of ignition"" columns. I created a field with the year of the data and then used sqldf to create a table for each year listing each state and a count of fire incidents with the cause of ignition listed as "U," or undetermined. I then row-bound the tables from all of the years to create one master table listing the state, year, and number of fires with undetermined causes.
+
+This master table is versatile.
+
+```{r, include=FALSE}
+#READ TABLES AND FILTER TO NON-RESIDENTIAL FIRES
+incidents2006 <- read.dbf("2006fireincident.dbf")
+incidents2006 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2006$INC_YEAR <- 2006
+#Retain only relevant columns
+incidents2006 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2006 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2006 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+incidents2007 <- read.dbf("2007fireincident.dbf")
+incidents2007 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2007$INC_YEAR <- 2007
+#Retain only relevant columns
+incidents2007 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2007 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2007 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+incidents2008 <- read.dbf("2008fireincident.dbf")
+incidents2008 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2008$INC_YEAR <- 2008
+#Retain only relevant columns
+incidents2008 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2008 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2008 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+incidents2009 <- read.dbf("2009fireincident.dbf")
+incidents2009 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2009$INC_YEAR <- 2009
+#Retain only relevant columns
+incidents2009 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2009 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2009 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+
+incidents2010 <- read.dbf("2010fireincident.dbf")
+incidents2010 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2010$INC_YEAR <- 2010
+#Retain only relevant columns
+incidents2010 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2010 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2010 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+incidents2011 <- read.dbf("2011fireincident.dbf")
+incidents2011 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2011$INC_YEAR <- 2011
+#Retain only relevant columns
+incidents2011 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2011 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2011 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+incidents2012 <- read.table("2012fireincident.txt", sep="^", header=T)
+incidents2012 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2012$INC_YEAR <- 2012
+#Retain only relevant columns
+incidents2012 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2012 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2012 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+
+incidents2013 <- read.table("2013fireincident.txt", sep="^", header=T)
+incidents2013 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2013$INC_YEAR <- 2013
+#Retain only relevant columns
+incidents2013 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2013 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2013 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+
+incidents2014 <- read.table("2014fireincident.txt", sep="^", header=T)
+incidents2014 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2014$INC_YEAR <- 2014
+#Retain only relevant columns
+incidents2014 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2014 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2014 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+
+incidents2015 <- read.table("2015fireincident.txt", sep="^", header=T)
+incidents2015 %<>% filter(NOT_RES == "Y")
+#Create a field with the year
+incidents2015$INC_YEAR <- 2015
+#Retain only relevant columns
+incidents2015 %<>% select(STATE, FDID, CAUSE_IGN, INC_YEAR)
+#Create a table that lists the state, year, and number of "unidentified" fire cause 
+Ubystate2015 <- sqldf("select STATE, INC_YEAR, CAUSE_IGN, count(CAUSE_IGN) from incidents2015 where CAUSE_IGN == 'U' group by STATE, CAUSE_IGN ORDER BY STATE")
+
+#transform into data.frames
+Ubystate2006 %<>% data.frame()
+Ubystate2007 %<>% data.frame()
+Ubystate2008 %<>% data.frame()
+Ubystate2009 %<>% data.frame()
+Ubystate2010 %<>% data.frame()
+Ubystate2011 %<>% data.frame()
+Ubystate2012 %<>% data.frame()
+Ubystate2013 %<>% data.frame()
+Ubystate2014 %<>% data.frame()
+Ubystate2015 %<>% data.frame()
+
+#create master table of number of undetermined causes by state and by year. 
+undetermined <- rbindlist(list(Ubystate2006, Ubystate2007, Ubystate2008, Ubystate2009, Ubystate2010, Ubystate2011, Ubystate2012, Ubystate2013, Ubystate2014, Ubystate2015))
+
+```
+
+The table can be ordered to view the data points as time series for each state, as shown below.
+
+| STATE | YEAR | NUM_U |
+|-------|------|-------|
+| AK    | 2006 | 167   |
+| AK    | 2007 | 188   |
+| AK    | 2008 | 153   |
+| AK    | 2009 | 240   |
+| AK    | 2010 | 162   |
+| AK    | 2011 | 201   |
+| AK    | 2012 | 201   |
+| AK    | 2013 | 266   |
+| AK    | 2014 | 227   |
+| AK    | 2015 | 203   |
+
+The table can also be arranged to view comparisons between states by year, as shown below:
+
+| STATE | YEAR | NUM_U |
+|-------|------|-------|
+| AK    | 2006 | 167   |
+| AL    | 2006 | 1081  |
+| AR    | 2006 | 2172  |
+| AZ    | 2006 | 855   |
+| CA    | 2006 | 4651  |
+| CO    | 2006 | 866   |
+| CT    | 2006 | 1284  |
+| DE    | 2006 | 319   |
+| FL    | 2006 | 7516  |
+| GA    | 2006 | 2749  |
+
+#Analysis
+To analyze the data, I create a summary table containing the mean and variance for the number of undetermined fires in each state. I decided to examine the yearly data points for Texas to see if any values were outside 2 standard deviations from the mean.
+
+| STATE | MEAN   | STD.DEV |
+|-------|--------|---------|
+| TX    | 7932.6 | 1587.76 |
+
+
+```{r, echo=FALSE}
+tx <- read.csv("txtable.csv")
+ggplot(tx, aes(YEAR, NUM_U)) + geom_ribbon(aes(ymin=7932.6-(2*1587.76), ymax=7932.6+(2*1587.76)), fill="grey87") + geom_ribbon(aes(ymin=7932.6-(1587.76), ymax=7932.6+(1587.76)), fill="grey70") + geom_line() + geom_hline(aes(yintercept=7932.6), color="coral2", size=1, linetype="dashed") + labs(x="Year", y="Number Undetermined", title="Number of Undetermined Fire Causes in Texas by Year")
+
+```
+
+It appears that the number of fires with undetermined causes in Texas in 2011 lies outside of 2 standard deviations from the mean (represented by the dashed coral line). Since there is only a 95% chance of this happening, something must have been going on in Texas in 2011. Further analysis could focus specifially on explaining why this number is so high, perhaps using a linear regression to understand factors that contrubte to a high number of fires with undetermined causes. 
+
+
+#Shiny Web Application
+
+To explore the data for yourself, visit this web application!
+
+https://lmckone.shinyapps.io/FireApp/
+
+
